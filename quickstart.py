@@ -1,3 +1,5 @@
+#This code is taken directly from here https://developers.google.com/calendar/api/quickstart/python#set-up-environment
+
 import datetime
 import os.path
 
@@ -10,6 +12,8 @@ from googleapiclient.errors import HttpError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
+# ID of Calendar being used
+calId = "1b07813367663daa2af43bd5f8e0e7e587545e02174dd01aff5462f8f58ad8e8@group.calendar.google.com"
 
 def main():
   """Shows basic usage of the Google Calendar API.
@@ -43,7 +47,7 @@ def main():
     events_result = (
         service.events()
         .list(
-            calendarId="primary",
+            calendarId=calId,
             timeMin=now,
             maxResults=10,
             singleEvents=True,
