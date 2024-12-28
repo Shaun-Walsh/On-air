@@ -1,9 +1,8 @@
-# This code is taken directly from here https://developers.google.com/calendar/api/quickstart/python#set-up-environment and modified to check for active events and turn on/off the Sense HAT lights accordingly.
-
 import datetime
 import os.path
 import time
 from sense_hat import SenseHat
+from dateutil.parser import isoparse
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -17,34 +16,61 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 # ID of Calendar being used
 calId = "1b07813367663daa2af43bd5f8e0e7e587545e02174dd01aff5462f8f58ad8e8@group.calendar.google.com"
 
-# Initialize senseHAT
+# Initialize sesnehat object
 sense = SenseHat()
 
-# This code was researched from here https://docs.python.org/3/library/time.html and here https://docs.python.org/3/library/datetime.html#module-datetime. It checks if there's an active event and turns the lights on/off."""
-def check_active_event(events):
-    now = datetime.datetime.utcnow()
-    active = False
+# Colour Variables
+GREEN = (0, 255, 0)  # RGB for green
+OFF = (0, 0, 0)    # RGB for red
 
+# # Time fucntions in this code were researched from here https://docs.python.org/3/library/time.html and here https://docs.python.org/3/library/datetime.html#module-datetime. 
+# It checks if there's an active event by examining if the current time is within the event's start and end times, if it is, it turns on the green light on the Sense HAT, otherwise it turns off the lights.
+
+# Global variable to track event and state
+current_event_id = None
+new_event = True
+
+# Function to check active events
+def check_active_event(events):
+    global current_event_id, new_event
+    now = datetime.datetime.now(datetime.timezone.utc)
+    active_event = None
+
+    # Check if any event is currently active
     for event in events:
-        # Variables for the event's start and end times. 
         start = event["start"].get("dateTime", event["start"].get("date"))
         end = event["end"].get("dateTime", event["end"].get("date"))
 
-        start_dt = datetime.datetime.fromisoformat(start[:-1])  # Remove 'Z' if present
-        end_dt = datetime.datetime.fromisoformat(end[:-1])      # Remove 'Z' if present
+        # Parse start and end times as timezone-aware datetime objects
+        start_dt = isoparse(start)
+        end_dt = isoparse(end)
 
         # Check if current time is within the event's time range
         if start_dt <= now <= end_dt:
-            active = True
-            print(f"Active event: {event['summary']} ({start} - {end})")
+            active_event = event
             break
 
-    # Turn Sense HAT lights on/off based on active status
-    if active:
-        sense.clear(0, 255, 0)  # Green light for active event
-    else:
-        sense.clear(0, 0, 0)  # Turn off lights if no active events
+    if active_event:
+        event_id = active_event["id"]
+        if event_id != current_event_id:
+            # New event detected, reset new_event flag
+            current_event_id = event_id
+            new_event = True
 
+        if new_event:
+            # Turn on light only once for the event
+            sense.clear(GREEN)
+            print(f"Light turned on for event: {active_event['summary']}")
+            new_event = False  # Prevent turning on the light again
+    else:
+        # No active event, reset everything
+        if current_event_id is not None:
+            print(f"Event {current_event_id} has ended. Turning off lights.")
+        sense.clear(OFF)
+        current_event_id = None
+        new_event = True
+
+# This code is taken directly from here https://developers.google.com/calendar/api/quickstart/python#set-up-environment and modified to fit the project.
 def main():
     """Fetch Google Calendar events and check for active ones."""
     creds = None
@@ -69,9 +95,10 @@ def main():
     try:
         service = build("calendar", "v3", credentials=creds)
 
-        while True:  # Loop to keep checking for active events
+# Place into a loop to keep checking for active events every 30 seconds
+        while True:  
             # Call the Calendar API
-            now = datetime.datetime.utcnow().isoformat() + "Z"  # 'Z' indicates UTC time
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat()  # UTC timestamp with timezone
             print("Checking for active events...")
             events_result = (
                 service.events()
@@ -91,7 +118,10 @@ def main():
             else:
                 check_active_event(events)
 
-            time.sleep(60)  # Wait for 1 minute before checking again
+            time.sleep(30)  # Wait for 30 seconds before checking again
+
+         # Short delay to prevent high CPU usage
+        time.sleep(0.1)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
