@@ -2,8 +2,8 @@
 
 import datetime
 import os.path
-import time  # For scheduling checks
-from sense_hat import SenseHat  # Import Sense HAT library
+import time
+from sense_hat import SenseHat
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -17,16 +17,16 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 # ID of Calendar being used
 calId = "1b07813367663daa2af43bd5f8e0e7e587545e02174dd01aff5462f8f58ad8e8@group.calendar.google.com"
 
-# Initialize Sense HAT
+# Initialize senseHAT
 sense = SenseHat()
 
+# This code was researched from here https://docs.python.org/3/library/time.html and here https://docs.python.org/3/library/datetime.html#module-datetime. It checks if there's an active event and turns the lights on/off."""
 def check_active_event(events):
-    """Check if there's an active event and turn lights on/off."""
     now = datetime.datetime.utcnow()
     active = False
 
     for event in events:
-        # Parse the event's start and end times
+        # Variables for the event's start and end times. 
         start = event["start"].get("dateTime", event["start"].get("date"))
         end = event["end"].get("dateTime", event["end"].get("date"))
 
