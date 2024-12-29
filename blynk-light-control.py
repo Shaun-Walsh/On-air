@@ -16,27 +16,18 @@ IMAGE_PATH = "./images/sensehat_image.jpg"
 # Initialise the Blynk instance
 blynk = BlynkLib.Blynk(BLYNK_AUTH)
 
-# Global variable to track light state
-light_on = False
-
 # Function to capture and upload an image
 def capture_and_upload_image():
-    capture_image(IMAGE_PATH)  # Capture an image
-    result = upload_image(IMAGE_PATH)  # Upload the image and get the URL
-    blynk.set_property(2, "urls", result)  # Update the widget with the image URL
+    capture_image(IMAGE_PATH)  
+    result = upload_image(IMAGE_PATH) 
+    blynk.set_property(2, "urls", result) # Update the urls property of widget attached to Datastream2 (virtual pin V2)
 
 # Motion detected callback
 def motion_detected(data):
-    global light_on
     print("Motion detected")
-    
-    # Log event in Blynk
     blynk.log_event("movement_event", "Motion Detected")
-    
-    # Trigger camera function to capture and upload image
+# Call image capture and upload function
     capture_and_upload_image()
-
-    # Turn on virtual pin V0 to indicate motion detected
     blynk.virtual_write(0, 1)
     sleep(2)
     blynk.virtual_write(0, 0)
@@ -50,31 +41,21 @@ def handle_v1_write(value):
     
     if button_value == "1":
         sense.clear(0, 255, 0)  # Turn on the green light
-        light_on = True
+   
     else:
         sense.clear()  # Turn off the light
-        light_on = False
 
 # Main loop to keep the Blynk connection alive and process events
 if __name__ == "__main__":
     print("Blynk application started. Listening for Movement Events...")
-    
-    # Set up the motion listener on port 5000
     listener = SensorListener(port=5000)
     listener.callback = motion_detected
     listener.start()
 
     try:
         while True:
-            # Process Blynk events
-            blynk.run()
-            
-            # Send temperature data to Virtual Pin V0
-            temperature = round(sense.temperature, 2)
-            blynk.virtual_write(0, temperature)
-            
-            # Sleep for 2 seconds to avoid excessive CPU usage and limit updates
-            sleep(2)
+            blynk.run() # Process Blynk events
+            sleep(2) # Add a short delay to avoid high CPU usage
 
     except KeyboardInterrupt:
         print("Blynk application stopped.")
