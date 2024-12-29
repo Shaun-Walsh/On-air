@@ -4,6 +4,7 @@ This project aims to design and implement a smart "On Air" sign using a Raspberr
 The application includes motion detection, image capture, and the ability to control the Sense HAT’s LED matrix through Blynk. This update allows for automated camera captures when motion is detected, all while maintaining the ability to manually control the lights via Blynk.
 
 ![https://media1.tenor.com/m/8GhHPlQ7pRcAAAAC/qa.gif](https://media1.tenor.com/m/8GhHPlQ7pRcAAAAC/qa.gif)
+
 🔧 **Key Features:**
 - **Google Calendar Integration**:
   - Automatically checks a specific Google Calendar for upcoming and ongoing events.
