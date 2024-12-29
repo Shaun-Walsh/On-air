@@ -1,3 +1,5 @@
 # Ignore Google API credentials and tokens
 credentials.json
 token.json
+/images/sensehat_image.jpg
+
