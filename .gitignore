@@ -1,5 +1,4 @@
-# Ignore Google API credentials and tokens
+# Ignore Google API credentials and tokens, and images
 credentials.json
 token.json
-/images/sensehat_image.jpg
-
+/images/
